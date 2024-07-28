@@ -3,11 +3,11 @@ plugins {
 }
 
 android {
-    namespace = "com.example.permissionslibrary"
+    namespace = "com.example.permissionslib"
     compileSdk = 34
 
     defaultConfig {
-        applicationId = "com.example.permissionslibrary"
+        applicationId = "com.example.permissionslib"
         minSdk = 24
         targetSdk = 34
         versionCode = 1
@@ -35,12 +35,13 @@ dependencies {
 
     implementation(libs.appcompat)
     implementation(libs.material)
-    implementation(libs.activity)
-    implementation(libs.constraintlayout)
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)
 
-    implementation(project(":permissionslib"))
+    //GSON:
+    implementation (libs.gson)
 
+    //Cryptography
+    implementation(libs.security.crypto)
 }

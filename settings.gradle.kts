@@ -21,3 +21,5 @@ dependencyResolutionManagement {
 
 rootProject.name = "PermissionsLibrary"
 include(":app")
+include(":permissionslib")
+
