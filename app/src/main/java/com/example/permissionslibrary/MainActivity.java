@@ -18,7 +18,11 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
         setContentView(R.layout.activity_main);
 
         permissionsManager = new PermissionsManager(this, this);
-        permissionsManager.requestPermission(android.Manifest.permission.CAMERA, REQUEST_CODE);
+        permissionsManager.requestPermissions(new String[]{
+                android.Manifest.permission.READ_CONTACTS,
+                android.Manifest.permission.CAMERA
+
+        }, REQUEST_CODE);
     }
 
     @Override
@@ -39,8 +43,6 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if (requestCode == REQUEST_CODE) {
-            permissionsManager.handlePermissionResult(requestCode, permissions, grantResults);
-        }
+        permissionsManager.handlePermissionResult(requestCode, permissions, grantResults);
     }
 }
