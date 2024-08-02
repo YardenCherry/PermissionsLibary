@@ -19,8 +19,8 @@ public class MainActivity extends AppCompatActivity implements PermissionsListen
 
         permissionsManager = new PermissionsManager(this, this);
         permissionsManager.requestPermissions(new String[]{
-                android.Manifest.permission.READ_CONTACTS,
-                android.Manifest.permission.CAMERA
+                android.Manifest.permission.READ_CONTACTS
+                //android.Manifest.permission.CAMERA
 
         }, REQUEST_CODE);
     }
