@@ -19,7 +19,7 @@ public class MainActivity extends AppCompatActivity {
         String[] permissions = {
                 android.Manifest.permission.CAMERA,
                 android.Manifest.permission.ACCESS_FINE_LOCATION,
-                android.Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                android.Manifest.permission.ACCESS_COARSE_LOCATION,
                 android.Manifest.permission.READ_CONTACTS,
                 android.Manifest.permission.READ_SMS,
                 android.Manifest.permission.CALL_PHONE,

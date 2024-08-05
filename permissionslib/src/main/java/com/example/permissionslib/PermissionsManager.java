@@ -10,20 +10,23 @@ import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
+import android.widget.LinearLayout;
+import android.widget.Toast;
 
+import androidx.annotation.ColorRes;
 import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
 
+import com.examole.permissionslib.R;
 import com.google.android.material.button.MaterialButton;
 
-import java.util.LinkedList;
-import java.util.Queue;
+import java.util.HashMap;
+import java.util.Map;
 
 public class PermissionsManager implements PermissionsListener {
     private final Activity activity;
-    private final Queue<PermissionRequest> permissionQueue = new LinkedList<>();
     private MaterialButton permissionsButton;
-    private boolean isRequestingPermissions = false;
+    private final Map<String, MaterialButton> permissionButtons = new HashMap<>();
 
     public PermissionsManager(Activity activity) {
         this.activity = activity;
@@ -43,36 +46,45 @@ public class PermissionsManager implements PermissionsListener {
         permissionsButton.setText("Request Permissions");
         permissionsButton.setContentDescription("requestPermissions");
         permissionsButton.setCornerRadius(24);
-        permissionsButton.setOnClickListener(v -> requestPermissions(permissions, requestCode));
+        permissionsButton.setBackgroundColor(activity.getResources().getColor(R.color.blue));
+        permissionsButton.setOnClickListener(v -> showPermissionsDialog(permissions, requestCode));
 
         rootLayout.addView(permissionsButton);
     }
 
-    public void requestPermissions(String[] permissions, int requestCode) {
-        for (String permission : permissions) {
-            permissionQueue.add(new PermissionRequest(permission, requestCode));
-        }
-        if (!isRequestingPermissions) {
-            processNextPermission();
-        }
-    }
+    private void showPermissionsDialog(String[] permissions, int requestCode) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(activity);
+        builder.setTitle("Request Permissions");
 
-    private void processNextPermission() {
-        if (!permissionQueue.isEmpty()) {
-            isRequestingPermissions = true;
-            PermissionRequest nextRequest = permissionQueue.poll();
-            if (nextRequest != null) {
-                requestPermission(nextRequest.permission, nextRequest.requestCode);
+        LinearLayout layout = new LinearLayout(activity);
+        layout.setOrientation(LinearLayout.VERTICAL);
+
+        for (String permission : permissions) {
+            MaterialButton button = new MaterialButton(activity);
+            button.setText(getPermissionName(permission));
+            button.setCornerRadius(24);
+
+            if (PermissionsUtils.isPermissionGranted(activity, permission)) {
+                button.setBackgroundColor(activity.getResources().getColor(R.color.green));
+            } else if (ActivityCompat.shouldShowRequestPermissionRationale(activity, permission)) {
+                button.setBackgroundColor(activity.getResources().getColor(R.color.red));
+            } else {
+                button.setBackgroundColor(activity.getResources().getColor(R.color.blue));
             }
-        } else {
-            isRequestingPermissions = false;
+            button.setOnClickListener(v -> requestPermission(permission, requestCode));
+
+            layout.addView(button);
+            permissionButtons.put(permission, button);
         }
+
+        builder.setView(layout);
+        builder.setPositiveButton("Close", (dialog, which) -> dialog.dismiss());
+        builder.show();
     }
 
     private void requestPermission(String permission, int requestCode) {
         if (PermissionsUtils.isPermissionGranted(activity, permission)) {
             onPermissionGranted(permission);
-            processNextPermission();
         } else if (PermissionsUtils.shouldShowRequestPermissionRationale(activity, permission)) {
             showPermissionRationaleDialog(permission, requestCode);
         } else {
@@ -98,22 +110,22 @@ public class PermissionsManager implements PermissionsListener {
                 onPermissionGranted(permissions[i]);
             } else if (ActivityCompat.shouldShowRequestPermissionRationale(activity, permissions[i])) {
                 onPermissionDenied(permissions[i]);
-                permissionQueue.add(new PermissionRequest(permissions[i], requestCode)); // Re-add denied permissions to the queue
             } else {
                 onPermissionPermanentlyDenied(permissions[i]);
             }
         }
-        processNextPermission();
     }
 
     @Override
     public void onPermissionGranted(String permission) {
-        // Handle permission granted
+        Toast.makeText(activity, getPermissionName(permission) + " permission granted.", Toast.LENGTH_SHORT).show();
+        updateButtonColor(permission, R.color.green);
     }
 
     @Override
     public void onPermissionDenied(String permission) {
-        // Handle permission denied
+        Toast.makeText(activity, getPermissionName(permission) + " permission denied.", Toast.LENGTH_SHORT).show();
+        updateButtonColor(permission, R.color.red);
     }
 
     @Override
@@ -137,17 +149,15 @@ public class PermissionsManager implements PermissionsListener {
         activity.startActivity(intent);
     }
 
+    private void updateButtonColor(String permission, @ColorRes int colorRes) {
+        MaterialButton button = permissionButtons.get(permission);
+        if (button != null) {
+            button.setBackgroundColor(activity.getResources().getColor(colorRes));
+        }
+    }
+
     private String getPermissionName(String permission) {
         return permission.toLowerCase().substring(("android.permission.").length()).replace('_', ' ');
     }
 
-    private static class PermissionRequest {
-        String permission;
-        int requestCode;
-
-        PermissionRequest(String permission, int requestCode) {
-            this.permission = permission;
-            this.requestCode = requestCode;
-        }
-    }
 }
